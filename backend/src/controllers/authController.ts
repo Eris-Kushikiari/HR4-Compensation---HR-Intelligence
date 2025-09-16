@@ -19,9 +19,9 @@ const refresCookieOptions = {
 }
 
 export const register = async (req: Request, res: Response) => {
-    const {email, password, role} = req.body;
-    if(!email || !password) {
-        return res.status(400).json({message: "Email & password required"})
+    const {username, email, password, role} = req.body;
+    if(!username || !email || !password) {
+        return res.status(400).json({message: "Username, email and password are required"})
     }
 
     const existing = await User.findOne({email});
@@ -29,7 +29,7 @@ export const register = async (req: Request, res: Response) => {
         return res.status(409).json({message: 'User already exist'})
     }
 
-    const user = await User.create({email, password, role});
+    const user = await User.create({username, email, password, role});
     const accessToken = createAccessToken(user);
     const refreshToken = createRefreshToken(user);
 
@@ -38,7 +38,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.cookie('accessToken', accessToken, accessCookieOptions)
     res.cookie('refreshToken', refreshToken, refresCookieOptions)
-    res.status(201).json({user: {id: user._id, email: user.email, role: user.role}})
+    res.status(201).json({message: "Registered successfully"})
 }
 
 export const login = async (req: Request, res: Response) =>{
@@ -65,7 +65,7 @@ export const login = async (req: Request, res: Response) =>{
 
     res.cookie('accessToken', accessToken, accessCookieOptions)
     res.cookie('refreshToken', refreshToken, refresCookieOptions)
-    res.json({user: user._id, email: user.email, role: user.role})
+    res.json({message: "Login successfully"})
 }
 
 export const refresh = async (req: Request, res: Response) =>{

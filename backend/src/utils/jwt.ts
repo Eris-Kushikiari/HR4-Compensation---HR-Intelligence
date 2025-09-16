@@ -3,7 +3,7 @@ import { IUser } from '../models/User'
 
 export const createAccessToken = (user: IUser) =>
   jwt.sign(
-    { sub: user.id.toString(), role: user.role, email: user.email },
+    { sub: user.id.toString(), role: user.role, username: user.username, email: user.email },
     process.env.ACCESS_TOKEN_SECRET!,
     { expiresIn: '15m' }
   );
