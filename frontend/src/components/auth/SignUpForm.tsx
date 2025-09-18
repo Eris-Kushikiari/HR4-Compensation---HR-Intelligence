@@ -20,7 +20,7 @@ export default function SignUpForm() {
   //if already logged in, redirect
   useEffect(() =>{
     if(user?.role === 'admin') navigate('/adminDashboard');
-    if(user?.role === 'user') navigate('/userDashboard')
+    if(user?.role === 'user') navigate('/userDashboard');
   }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) =>{
