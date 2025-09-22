@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import EmployeeProfile from "../models/EmployeeProfile";
-import { error } from "console";
 
 //create new profile for the loggend in user
 export const createEmployeeProfile = async (req: Request, res: Response) => {

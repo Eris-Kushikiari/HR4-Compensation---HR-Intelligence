@@ -6,6 +6,7 @@ import { connectDB } from "./config/db";
 import authRoutes from './routes/auth'
 import protectedRoutes from './routes/protected'
 import errorHandler from "./middleware/errorHandler";
+import employeeProfile from './routes/employeeProfileRoute'
 
 dotenv.config()
 const app = express()
@@ -23,6 +24,7 @@ app.use(
 app.use('/api/auth', authRoutes)
 app.use('/api', protectedRoutes)
 
+app.use('/api/employee', employeeProfile)
 
 app.use(errorHandler)
 
