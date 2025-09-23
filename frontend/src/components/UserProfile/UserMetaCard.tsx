@@ -4,7 +4,7 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { EmployeeProfile } from "../../types/employee";
-import { getEmployeeProfiles, createEmployeeProfiles, editEmployeeProfiles, deleteEmployeeProfiles } from "../../api/employeeProfileApi";
+import { getEmployeeProfiles, createEmployeeProfiles, editEmployeeProfiles } from "../../api/employeeProfileApi";
 import { useEffect, useState } from "react";
 
 
@@ -16,6 +16,10 @@ export default function UserMetaCard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [fullName, setFullName] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
+  const [employeeId, setEmployeeId] = useState('')
+
 
 
   useEffect(() =>{
@@ -24,8 +28,12 @@ export default function UserMetaCard() {
         const data = await getEmployeeProfiles()
         console.log("data:", data)
         setProfiles(data)
+
+        setFullName(data.fullName || '')
+        setJobTitle(data.jobTitle || '')
+        setEmployeeId(data.employeeId || '')
       } catch (error: any) {
-        setError(error.response?.data?.message || 'Failed to load profiles')
+        setError(error.response?.data?.message || 'No Profile found please create one')
       } finally {
         setLoading(false)
       }
@@ -36,32 +44,56 @@ export default function UserMetaCard() {
 
 
 
-  const handleSave = () => {
-    // Handle save logic here
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setError(null)
+      const payload = {
+        fullName,
+        jobTitle,
+        employeeId,
+      }
+
+      let updated: EmployeeProfile;
+      if(profiles) {
+        //already have profile -> update
+        updated = await editEmployeeProfiles(payload)
+      } else {
+        //no profile -> create
+        updated = await createEmployeeProfiles(payload as any)
+      }
+
+      setProfiles(updated)
+      alert('Profile saved!')
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Error saving profile')
+    }
     console.log("Saving changes...");
     closeModal();
   };
 
   if(loading) return <p>Loading....</p>
-  if(error) return <p className="text-red-500">{error}</p>
+
 
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
+          <div className="flex flex-col items-center w-full xl:flex-row">
+            <p className="text-red-500">{error}</p>
             {profiles && (
               <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {profiles.fullName}
+              <h4 className={!profiles.fullName ? 'text-red-500' : 'mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left'}>
+                {profiles.fullName || 'N/A'}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {profiles.employeeId}
+                <p className={!profiles.employeeId ? 'text-red-500' : 'text-sm text-gray-500 dark:text-gray-400'}>
+                  {profiles.employeeId || 'N/A'}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {profiles.jobTitle}
+                <p className={!profiles.jobTitle ? 'text-red-500' : 'text-sm text-gray-500 dark:text-gray-400'}>
+                  {profiles.jobTitle || 'N/A'}
                 </p>
               </div>
             </div>
@@ -86,7 +118,7 @@ export default function UserMetaCard() {
                 fill=""
               />
             </svg>
-            Edit
+            {profiles ? 'Edit' : 'Add'}
           </button>
         </div>
       </div>
@@ -94,44 +126,31 @@ export default function UserMetaCard() {
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Profile
+              {profiles ? 'Edit Profile' : 'Create Profile'}
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              {profiles ? 'Update your details to keep your profile up-to-date.' : 'Fill out your information to create your profile.'}
             </p>
           </div>
-          <form className="flex flex-col">
-            <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+          <form onSubmit={handleSave} className="flex flex-col">
+            <div className="custom-scrollbar  overflow-y-auto px-2 pb-3">
               <div>
               </div>
               <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Profile
-                </h5>
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
-                    <Input type="text" value="Musharof" />
+                    <Label>Full Name</Label>
+                    <Input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}/>
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
+                    <Label>Job Title</Label>
+                    <Input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com" />
-                  </div>
-
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46" />
-                  </div>
-
-                  <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" value="Team Manager" />
+                    <Label>Employee ID</Label>
+                    <Input type="text" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -140,8 +159,8 @@ export default function UserMetaCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button size="sm">
+                {profiles ? 'Update Profile' : 'Create Profile'}
               </Button>
             </div>
           </form>

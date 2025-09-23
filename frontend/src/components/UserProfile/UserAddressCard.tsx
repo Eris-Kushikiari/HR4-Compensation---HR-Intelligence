@@ -3,60 +3,191 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { getEmployeeProfiles, createEmployeeProfiles, editEmployeeProfiles } from "../../api/employeeProfileApi";
+import { EmployeeProfile } from "../../types/employee";
+import { useEffect, useState } from "react";
+import Select from "../form/Select";
+
+
+const employmentOptions = [
+  { value: "Full-Time", label: "Full-Time" },
+  { value: "Part-Time", label: "Part-Time" },
+  { value: "Contract", label: "Contract" },
+  { value: "Internship", label: "Internship" },
+];
+
+
 
 export default function UserAddressCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
+
+  const [profiles, setProfiles] = useState<EmployeeProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<String | null>(null)
+
+  const [department, setDepartment] = useState('')
+  const [reportingManager, setReportingManager] = useState('')
+  const [employmentType, setEmploymentType] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [workLocation, setWorkLocation] = useState('')
+  const [workSchedule, setWorkSchedule] = useState('')
+ 
+  useEffect(() => {
+    const fetchProfiles = async () =>{
+      try {
+        const data = await getEmployeeProfiles()
+        console.log(data)
+        setProfiles(data)
+
+        setDepartment(data.department || '')
+        setEmploymentType(data.employmentType || '')
+        setReportingManager(data.reportingManager || '')
+        setStartDate(data.startDate || '')
+        setWorkLocation(data.workLocation || '')
+        setWorkSchedule(data.workSchedule || '')
+      } catch (error: any) {
+        setError(error.response?.data?.message || 'No Profile found please create one')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfiles()
+  }, [])
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setError(null)
+      const payload = {
+        department,
+        reportingManager,
+        employmentType,
+        startDate,
+        workLocation,
+        workSchedule,
+      }
+      let updated: EmployeeProfile
+      if(profiles) {
+        //already have profile -> update
+        updated = await editEmployeeProfiles(payload)
+      } else {
+        //no profil -> create
+        updated = await createEmployeeProfiles(payload as any)
+      }
+
+      setProfiles(updated)
+      alert('Profile save!')
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Error saving profile')
+    }
+
     console.log("Saving changes...");
     closeModal();
   };
+
+  if(loading) return <p>Loading....</p>
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-              Address
+              Employment Details 
             </h4>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+            <p className="text-red-500">{error}</p>
+            {profiles && (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-7 2xl:gap-x-32">
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Country
+                  Job Title
                 </p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  United States.
+                <p className={!profiles.jobTitle ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.jobTitle || 'N/A'}
                 </p>
               </div>
 
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  City/State
+                  Department
                 </p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  Phoenix, Arizona, United States.
-                </p>
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Postal Code
-                </p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  ERT 2489
+                <p className={!profiles.department ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.department || 'N/A'}
                 </p>
               </div>
 
               <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  TAX ID
+                  Reporting Manager
                 </p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  AS4568384
+                <p className={!profiles.reportingManager ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.reportingManager || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Employment Type
+                </p>
+                <p className={!profiles.employmentType ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.employmentType || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Start Date
+                </p>
+                <p className={!profiles.startDate ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.startDate || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Status
+                </p>
+                <p className={!profiles.status ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.status || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Work Location
+                </p>
+                <p className={!profiles.workLocation ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.workLocation || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Work Schedule
+                </p>
+                <p className={!profiles.workSchedule ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.workSchedule || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  leave Balance
+                </p>
+                <p className={!profiles.leaveBalance ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.leaveBalance || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Over Time Records
+                </p>
+                <p className={!profiles.overTimeRecords ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.overTimeRecords || 'N/A'}
                 </p>
               </div>
             </div>
+            )}
           </div>
 
           <button
@@ -86,33 +217,49 @@ export default function UserAddressCard() {
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Address
+              {profiles ? 'Edit Employment Details' : 'Create Employment Details'}
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              {profiles ? 'Update your details to keep your profile up-to-date.' : 'Fill out your information to create your profile.'}
             </p>
           </div>
-          <form className="flex flex-col">
+          <form onSubmit={handleSave} className="flex flex-col">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                 <div>
-                  <Label>Country</Label>
-                  <Input type="text" value="United States" />
+                  <Label>Department</Label>
+                  <Input type="text" placeholder="Department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                 </div>
 
                 <div>
-                  <Label>City/State</Label>
-                  <Input type="text" value="Arizona, United States." />
+                  <Label>Reporting Manager</Label>
+                  <Input type="text" placeholder="Reporting Manager" value={reportingManager} onChange={(e) => setReportingManager(e.target.value)} />
                 </div>
 
                 <div>
-                  <Label>Postal Code</Label>
-                  <Input type="text" value="ERT 2489" />
+                  <Label>Employment Type</Label>
+                  <Select
+                    options={employmentOptions}
+                    placeholder="Select employment type"
+                    defaultValue={employmentType}            
+                    onChange={(value) => setEmploymentType(value)} 
+                    className="mt-1"
+                  />
                 </div>
 
                 <div>
-                  <Label>TAX ID</Label>
-                  <Input type="text" value="AS4568384" />
+                  <Label>Start Date</Label>
+                  <Input type="date" placeholder="dd/mm/yyyy" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+
+                <div>
+                  <Label>Work Location</Label>
+                  <Input type="text" placeholder="Work Location" value={workLocation} onChange={(e) => setWorkLocation(e.target.value)} />
+                </div>
+
+                <div>
+                  <Label>Work Schedule</Label>
+                  <Input type="text" placeholder="Work Schedule" value={workSchedule} onChange={(e) => setWorkSchedule(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -120,8 +267,8 @@ export default function UserAddressCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button size="sm">
+                {profiles ? 'Update Employment Details' : 'Create Employment Details'}
               </Button>
             </div>
           </form>

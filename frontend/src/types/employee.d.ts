@@ -34,7 +34,7 @@ export interface EmployeeProfile {
     jobTitle: string
     department: string
     reportingManager: string
-    employmentTypr: string
+    employmentType: string
     startDate: string
     status: string
     workLocation: string

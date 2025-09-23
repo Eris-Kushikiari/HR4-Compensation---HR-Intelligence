@@ -3,14 +3,104 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { EmployeeProfile } from "../../types/employee";
+import { getEmployeeProfiles, createEmployeeProfiles, editEmployeeProfiles } from "../../api/employeeProfileApi";
+import { useEffect, useState } from "react";
+import Select from "../form/Select";
+
+const genderOptions = [
+  { value: "Male", label: "Male" },
+  { value: "Female", label: "Female" },
+];
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
+
+  const [profiles, setProfiles] = useState<EmployeeProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [gender, setGender] = useState('')
+  const [nationalId, setNationalId] = useState('')
+  const [taxId, setTaxId] = useState('')
+
+  const [contact, setContact] = useState<{phone: string; email: string; address: string}>({
+    phone: '',
+    email: '',
+    address: '',
+  })
+  const [emergencyContacts, setEmergencyContacts] = useState<{name: string; relationship: string; phone: string}[]>([
+    {
+      name: '',
+      relationship: '',
+      phone: '',
+    }
+  ])
+
+  useEffect(() => {
+    const fetchProfiles = async () =>{
+      try {
+        const data = await getEmployeeProfiles()
+        setProfiles(data)
+
+        setDateOfBirth(data.dateOfBirth || '')
+        setGender(data.gender || '')
+        setNationalId(data.nationalId || '')
+        setTaxId(data.taxId || '')
+        setContact({
+          phone: data.contact?.phone || '',
+          email: data.contact?.email || '',
+          address: data.contact?.address || '',
+        })
+        setEmergencyContacts(
+          (data.emergencyContacts ?? []).map((c) => ({
+            name: c.name || '',
+            relationship: c.relationship || '',
+            phone: c.phone || '',
+          }))
+        )
+      } catch (error: any) {
+        setError(error.response?.data?.mnessage || 'No profile found please create one')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfiles()
+  },[])
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setError(null)
+      const payload = {
+        dateOfBirth,
+        gender,
+        nationalId,
+        taxId,
+        contact,
+        emergencyContacts,
+      }
+      let updated: EmployeeProfile
+      if(profiles) {
+        //already have profile -> update
+        updated = await editEmployeeProfiles(payload)
+      } else {
+        //no profile -> create
+        updated = await createEmployeeProfiles(payload as any)
+      }
+
+      setProfiles(updated)
+      alert('Profile saved!')
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Failed to saved profile')
+    }
     console.log("Saving changes...");
     closeModal();
   };
+
+  if(loading) return <p>Loadin....</p>
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -18,53 +108,122 @@ export default function UserInfoCard() {
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
             Personal Information
           </h4>
+           <p className="text-red-500">{error}</p>
+           {profiles && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-7 2xl:gap-x-32">
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Employee Id
+                </p>
+                <p className={!profiles.employeeId ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.employeeId || 'N/A'}
+                </p>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                First Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Full Name
+                </p>
+                <p className={!profiles.fullName ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.fullName || 'N/A'}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Last Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Date of Birth
+                </p>
+                <p className={!profiles.dateOfBirth ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.dateOfBirth || 'N/A'}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email address
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Gender
+                </p>
+                <p className={!profiles.gender ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.gender || 'N/A'}
+                </p>
+              </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
-              </p>
-            </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  National Id
+                </p>
+                <p className={!profiles.nationalId ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.nationalId || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Tax Id
+                </p>
+                <p className={!profiles.taxId ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.taxId || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Phone
+                </p>
+                <p className={!profiles.contact?.phone ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.contact?.phone || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Email
+                </p>
+                <p className={!profiles.contact?.email ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.contact?.email || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Address
+                </p>
+                <p className={!profiles.contact?.address ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                  {profiles.contact?.address || 'N/A'}
+                </p>
+              </div>
+              {profiles.emergencyContacts?.map((emergency, id) => (
+              <div key={id} className="mb-6">
+                <p className="mb-2 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Emergency Contacts
+                </p>
+                <div className=" ml-4 space-y-3 md:ml-0 md:grid md:grid-cols-3 md:gap-x-6 md:space-y-0">
+                  <div>
+                    <p className="text-xs leading-normal text-gray-500 dark:text-gray-400">
+                      Name
+                    </p>
+                    <p className={!emergency.name ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                      {emergency.name || 'N/A'}
+                    </p>
+                  </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
-              </p>
+                  <div>
+                    <p className="text-xs leading-normal text-gray-500 dark:text-gray-400">
+                      Relationship
+                    </p>
+                    <p className={!emergency.relationship ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                      {emergency.relationship || 'N/A'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs leading-normal text-gray-500 dark:text-gray-400">
+                      Phone
+                    </p>
+                    <p className={!emergency.phone ? 'text-red-500' : 'text-sm font-medium text-gray-800 dark:text-white/90'}>
+                      {emergency.phone || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              ))}
             </div>
-          </div>
+           )}
         </div>
 
         <button
@@ -94,85 +253,180 @@ export default function UserInfoCard() {
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Personal Information
+              {profiles ? 'Edit Personal Information' : 'Create Personal Information'}
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              {profiles ? 'Update your details to keep your profile up-to-date.' : 'Fill out your information to create your profile.'}
             </p>
           </div>
-          <form className="flex flex-col">
+          <form onSubmit={handleSave} className="flex flex-col">
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Social Links
-                </h5>
-
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      value="https://www.facebook.com/PimjoHQ"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>X.com</Label>
-                    <Input type="text" value="https://x.com/PimjoHQ" />
-                  </div>
-
-                  <div>
-                    <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      value="https://www.linkedin.com/company/pimjo"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input type="text" value="https://instagram.com/PimjoHQ" />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                   Personal Information
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
-                    <Input type="text" value="Musharof" />
+                  <div>
+                    <Label>Date of Birth</Label>
+                    <Input
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      placeholder="dd/mm/yyyy"
+                    />
                   </div>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" value="Chowdhury" />
+                  <div>
+                    <Label>Gender</Label>
+                    <Select
+                      options={genderOptions}
+                      placeholder="Select Gender"
+                      defaultValue={gender}            
+                      onChange={(value) => setGender(value)} 
+                      className="mt-1"
+                    />
+                </div>
+
+                  <div>
+                    <Label>National Id</Label>
+                    <Input
+                      type="text"
+                      value={nationalId}
+                      onChange={(e) => setNationalId(e.target.value)}
+                      placeholder="National ID"
+                    />
                   </div>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" value="randomuser@pimjo.com" />
-                  </div>
-
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" value="+09 363 398 46" />
-                  </div>
-
-                  <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" value="Team Manager" />
+                  <div>
+                    <Label>Tax Id</Label>
+                    <Input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="Tax ID"/>
                   </div>
                 </div>
               </div>
+              <div className="mt-7">
+                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+                  Contacts
+                </h5>
+
+                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+                  <div className="col-span-2 lg:col-span-1">
+                    <Label>Phone</Label>
+                    <Input type="text" value={contact.phone} placeholder="Phone"  onChange={(e) => setContact({...contact, phone: e.target.value})}/>
+                  </div>
+
+                  <div className="col-span-2 lg:col-span-1">
+                    <Label>Email</Label>
+                    <Input type="email" value={contact.email} placeholder="Email" onChange={(e) => setContact({...contact, email: e.target.value})} />
+                  </div>
+
+                  <div className="col-span-2 lg:col-span-1">
+                    <Label>Address</Label>
+                    <Input type="text" value={contact.address} placeholder="Address" onChange={(e) => setContact({...contact, address: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+
+<div className="mt-7">
+  <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+    Emergency Contacts
+  </h5>
+
+  {emergencyContacts.map((contactItem, index) => (
+    <div
+      key={index}
+      className="mb-6 border-b border-gray-200 pb-4 dark:border-gray-700"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Contact {index + 1}
+        </p>
+
+        {/* delete button */}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            setEmergencyContacts((prev) => prev.filter((_, i) => i !== index))
+          }
+        >
+          Delete
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-3">
+        <div>
+          <Label>Name</Label>
+          <Input
+            type="text"
+            value={contactItem.name}
+            onChange={(e) =>
+              setEmergencyContacts((prev) => {
+                const updated = [...prev];
+                updated[index].name = e.target.value;
+                return updated;
+              })
+            }
+          />
+        </div>
+
+        <div>
+          <Label>Relationship</Label>
+          <Input
+            type="text"
+            value={contactItem.relationship}
+            onChange={(e) =>
+              setEmergencyContacts((prev) => {
+                const updated = [...prev];
+                updated[index].relationship = e.target.value;
+                return updated;
+              })
+            }
+          />
+        </div>
+
+        <div>
+          <Label>Phone</Label>
+          <Input
+            type="text"
+            value={contactItem.phone}
+            onChange={(e) =>
+              setEmergencyContacts((prev) => {
+                const updated = [...prev];
+                updated[index].phone = e.target.value;
+                return updated;
+              })
+            }
+          />
+        </div>
+      </div>
+    </div>
+  ))}
+
+  <div className="mt-4">
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() =>
+        setEmergencyContacts((prev) => [
+          ...prev,
+          { name: '', relationship: '', phone: '' },
+        ])
+      }
+    >
+      + Add Contact
+    </Button>
+  </div>
+</div>
+
+
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" type="submit">
                 Save Changes
               </Button>
             </div>

@@ -39,7 +39,7 @@ export interface EmployeeProfile {
     jobTitle: string;
     department: string;
     reportingManager: string;
-    employmentType: 'regular' | 'probationary' | 'contract';
+    employmentType: string;
     startDate: string;
     status: 'active' | 'resigned' | 'terminated';
     workLocation: string;
