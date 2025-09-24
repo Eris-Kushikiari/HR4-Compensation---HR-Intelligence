@@ -32,18 +32,6 @@ export const getMyEmployeeProfile = async (req: Request, res: Response) =>{
     }
 }
 
-//get any employee profile by id (admin usage)
-export const getEmployeeProfileById = async (req: Request, res: Response) =>{
-    try {
-        const profile = await EmployeeProfile.findOne({userId: req.user?.id})
-        if(!profile){
-            return res.status(404).json({message: "Profile not found"})
-        }
-        res.json(profile)
-    } catch (error) {
-        res.status(500).json({error: "Server error", details: error})
-    }
-}
 
 //Update the current logged in users profile
 export const updateMyEmployeeProfile = async (req: Request, res: Response) =>{
@@ -71,6 +59,8 @@ export const deleteMyEmployeeProfile = async (req: Request, res: Response) =>{
     }
 }
 
+//Admin controller
+
 //get all profiles for admin
 export const getAllEmployeeProfiles = async (req: Request, res: Response) =>{
     try {
@@ -78,5 +68,18 @@ export const getAllEmployeeProfiles = async (req: Request, res: Response) =>{
         res.json(profiles)
     } catch (error) {
         res.status(500).json({error: 'Server error', details: error})
+    }
+}
+
+//get any employee profile by id (admin usage)
+export const getEmployeeProfileById = async (req: Request, res: Response) =>{
+    try {
+        const profile = await EmployeeProfile.findOne({userId: req.user?.id})
+        if(!profile){
+            return res.status(404).json({message: "Profile not found"})
+        }
+        res.json(profile)
+    } catch (error) {
+        res.status(500).json({error: "Server error", details: error})
     }
 }

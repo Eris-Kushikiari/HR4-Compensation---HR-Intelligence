@@ -111,91 +111,103 @@ const tableData: Order[] = [
 
 export default function BasicTableOne() {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="max-w-full overflow-x-auto">
+     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      {/* Header with title and search */}
+      <div className="flex items-center justify-between px-6 py-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Latest Transactions
+        </h3>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search…"
+            className="w-48 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+          />
+          <svg
+            className="absolute right-3 top-2.5 h-4 w-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"
+            />
+          </svg>
+        </div>
+      </div>
+            <div className="max-w-full overflow-x-auto">
         <Table>
-          {/* Table Header */}
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+          <TableHeader className="border-t border-b border-gray-100 dark:border-white/[0.05]">
             <TableRow>
               <TableCell
                 isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
               >
-                User
+                Name
               </TableCell>
               <TableCell
                 isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
               >
-                Project Name
+                Date
               </TableCell>
               <TableCell
                 isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
               >
-                Team
+                Price
               </TableCell>
               <TableCell
                 isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
+              >
+                Category
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-400 dark:text-gray-500"
               >
                 Status
               </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Budget
-              </TableCell>
             </TableRow>
           </TableHeader>
-
-          {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
             {tableData.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                <TableCell className="px-6 py-4 text-start">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 overflow-hidden rounded-full">
-                      <img
-                        width={40}
-                        height={40}
-                        src={order.user.image}
-                        alt={order.user.name}
-                      />
-                    </div>
-                    <div>
-                      <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                    <img
+                      src={order.user.image}
+                      alt={order.user.name}
+                      className="h-8 w-8 rounded-full"
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800 dark:text-white">
                         {order.user.name}
                       </span>
-                      <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {order.user.role}
                       </span>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+
+                <TableCell className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  Nov 23, 01:00 PM
+                </TableCell>
+
+                <TableCell className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  {order.budget}
+                </TableCell>
+
+                <TableCell className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                   {order.projectName}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex -space-x-2">
-                    {order.team.images.map((teamImage, index) => (
-                      <div
-                        key={index}
-                        className="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900"
-                      >
-                        <img
-                          width={24}
-                          height={24}
-                          src={teamImage}
-                          alt={`Team member ${index + 1}`}
-                          className="w-full size-6"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+
+                <TableCell className="px-6 py-4">
                   <Badge
                     size="sm"
                     color={
@@ -209,13 +221,27 @@ export default function BasicTableOne() {
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {order.budget}
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center justify-between px-6 py-4">
+        <button className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          ← Previous
+        </button>
+        <div className="flex items-center gap-1">
+          <button className="h-8 w-8 rounded-md bg-brand-100 text-brand-600">
+            1
+          </button>
+          <button className="h-8 w-8 text-gray-600">2</button>
+          <button className="h-8 w-8 text-gray-600">3</button>
+          <span className="text-gray-400">…</span>
+          <button className="h-8 w-8 text-gray-600">10</button>
+        </div>
+        <button className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+          Next →
+        </button>
       </div>
     </div>
   );

@@ -209,7 +209,7 @@ export default function UserAddressCard() {
                 fill=""
               />
             </svg>
-            Edit
+            {profiles ? 'Edit' : 'Add'}
           </button>
         </div>
       </div>

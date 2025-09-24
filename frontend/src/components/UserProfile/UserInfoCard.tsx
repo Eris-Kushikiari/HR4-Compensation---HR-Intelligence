@@ -245,7 +245,7 @@ export default function UserInfoCard() {
               fill=""
             />
           </svg>
-          Edit
+          {profiles ? 'Edit' : 'Add'}
         </button>
       </div>
 
@@ -327,99 +327,98 @@ export default function UserInfoCard() {
                 </div>
               </div>
 
-<div className="mt-7">
-  <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-    Emergency Contacts
-  </h5>
+            <div className="mt-7">
+              <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
+                Emergency Contacts
+              </h5>
 
-  {emergencyContacts.map((contactItem, index) => (
-    <div
-      key={index}
-      className="mb-6 border-b border-gray-200 pb-4 dark:border-gray-700"
-    >
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          Contact {index + 1}
-        </p>
+              {emergencyContacts.map((contactItem, index) => (
+                <div
+                  key={index}
+                  className="mb-6 border-b border-gray-200 pb-4 dark:border-gray-700"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Contact {index + 1}
+                    </p>
 
-        {/* delete button */}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() =>
-            setEmergencyContacts((prev) => prev.filter((_, i) => i !== index))
-          }
-        >
-          Delete
-        </Button>
-      </div>
+                    {/* delete button */}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setEmergencyContacts((prev) => prev.filter((_, i) => i !== index))
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </div>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-3">
-        <div>
-          <Label>Name</Label>
-          <Input
-            type="text"
-            value={contactItem.name}
-            onChange={(e) =>
-              setEmergencyContacts((prev) => {
-                const updated = [...prev];
-                updated[index].name = e.target.value;
-                return updated;
-              })
-            }
-          />
-        </div>
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-3">
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        type="text"
+                        value={contactItem.name}
+                        onChange={(e) =>
+                          setEmergencyContacts((prev) => {
+                            const updated = [...prev];
+                            updated[index].name = e.target.value;
+                            return updated;
+                          })
+                        }
+                      />
+                    </div>
 
-        <div>
-          <Label>Relationship</Label>
-          <Input
-            type="text"
-            value={contactItem.relationship}
-            onChange={(e) =>
-              setEmergencyContacts((prev) => {
-                const updated = [...prev];
-                updated[index].relationship = e.target.value;
-                return updated;
-              })
-            }
-          />
-        </div>
+                    <div>
+                      <Label>Relationship</Label>
+                      <Input
+                        type="text"
+                        value={contactItem.relationship}
+                        onChange={(e) =>
+                          setEmergencyContacts((prev) => {
+                            const updated = [...prev];
+                            updated[index].relationship = e.target.value;
+                            return updated;
+                          })
+                        }
+                      />
+                    </div>
 
-        <div>
-          <Label>Phone</Label>
-          <Input
-            type="text"
-            value={contactItem.phone}
-            onChange={(e) =>
-              setEmergencyContacts((prev) => {
-                const updated = [...prev];
-                updated[index].phone = e.target.value;
-                return updated;
-              })
-            }
-          />
-        </div>
-      </div>
-    </div>
-  ))}
+                    <div>
+                      <Label>Phone</Label>
+                      <Input
+                        type="text"
+                        value={contactItem.phone}
+                        onChange={(e) =>
+                          setEmergencyContacts((prev) => {
+                            const updated = [...prev];
+                            updated[index].phone = e.target.value;
+                            return updated;
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
 
-  <div className="mt-4">
-    <Button
-      type="button"
-      variant="outline"
-      onClick={() =>
-        setEmergencyContacts((prev) => [
-          ...prev,
-          { name: '', relationship: '', phone: '' },
-        ])
-      }
-    >
-      + Add Contact
-    </Button>
-  </div>
-</div>
-
+              <div className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setEmergencyContacts((prev) => [
+                      ...prev,
+                      { name: '', relationship: '', phone: '' },
+                    ])
+                  }
+                >
+                  + Add Contact
+                </Button>
+              </div>
+            </div>
 
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">

@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import UserDashboard from "./pages/Dashboard/UserDashboard";
+import Employees from "./pages/Admin/Employees";
 
 export default function App() {
   return (
@@ -19,11 +20,12 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/adminDashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-            <Route index path="/userDashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
+            <Route index path="/adminDashboard" element={<PrivateRoute roles={["admin"]}><AdminDashboard /></PrivateRoute>} />
+            <Route index path="/userDashboard" element={<PrivateRoute roles={["user"]}><UserDashboard /></PrivateRoute>} />
 
             {/* Others Page */}
-            <Route path="/profile" element={<PrivateRoute><UserProfiles /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute roles={["admin", "user"]}><UserProfiles /></PrivateRoute>} />
+            <Route path="/employees" element={<PrivateRoute roles={['admin']}><Employees/></PrivateRoute>}/>
           </Route>
 
           {/* Auth Layout */}
